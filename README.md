@@ -14,7 +14,7 @@ I solved the problem by breaking it into four main steps, with each step handled
 
 3.  **External Verification (`verifier.py`):** Next, the script checks each extracted medication against the official NIH RxNorm API to see if it's real. The main challenge was that medication names can be messy (like "Metoprolol Succinate XL"). To solve this, I wrote a **progressive validation** function. It first checks "Metoprolol", then "Metoprolol Succinate", then "Metoprolol Succinate XL", finding the longest possible valid medication name that the API recognizes. This is much more accurate than the original idea of just checking the first word.
 
-4.  **Output Generation (`output_generation.py`):** Finally, the script saves the results in the two required formats: a structured JSON file for computers and a clean Markdown file for people to read.
+4.  **Output Generation (`output_generation.py`):** Finally, the script saves the results in the two required formats: a structured JSON file and a Markdown file.
 
 ## 2. Core Assumptions & Scope
 
