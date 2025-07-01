@@ -38,7 +38,7 @@ I designed the final prompt in `llm_extraction.py` using a few key ideas:
 * **Handling Details:** The prompt asks the model to look for general classes (like "beta-blockers") and to fix common misspellings it finds.
 * **Structured Output:** By using LangChain's structured output feature, the model *has* to return valid JSON, which makes the whole system more stable.
 
-To make sure I was using the best possible prompt, I used **`promptfoo`** to test 8 different prompt ideas against a CSV file of test cases, including some tough edge cases. This let me get real numbers on how well each prompt worked with different models (like GPT, Gemini, and Claude). I picked the one that consistently got the highest score for accuracy and was the most reliable. The results showed that **`gemini-1.5-flash`** with a very specific, few-shot prompt gave the best performance.
+To make sure I was using the best possible prompt, I used **`promptfoo`** to test 8 different prompt ideas against a CSV file of test cases, including some tough edge cases. This let me get real numbers on how well each prompt worked with different models (like GPT, Gemini, and Claude). I picked the one that consistently got the highest score for accuracy and was the most reliable. The results showed that **`gemini-2.5-flash`** with a very specific, few-shot prompt gave the best performance.
 
 ## 4. Challenges and Solutions
 
