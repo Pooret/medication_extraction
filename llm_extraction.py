@@ -1,9 +1,7 @@
 # llm_extraction.py
+
 import os
 from typing import List, Dict, Any
-from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_core.messages import HumanMessage
-from langchain_anthropic import ChatAnthropic
 from langchain_google_genai import ChatGoogleGenerativeAI
 from pydantic import BaseModel, Field
 from dotenv import load_dotenv
@@ -11,20 +9,24 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class Medication(BaseModel):
-    medication: str = Field(description="The name of the drug.")
+    """Pydantic model for a single medication."""
+    medication: str = Field(description="The name of the drug, corrected for any misspellings.")
     dosage: str = Field(description="A single string that includes all dosage and administration instructions.")
-    validated: bool = Field(default=False)
-    additional_information: Dict[str, Any] = Field(default_factory=dict)
-
+    validated: bool = Field(default=False, description="Flag indicating if the medication was validated.")
+    additional_information: Dict[str, Any] = Field(default_factory=dict, description="Supplementary data like RxCUI or errors.")
 
 class MedicationList(BaseModel):
+    """Pydantic model for a list of medications."""
     medications: List[Medication]
 
-def extract_medications(full_text):
+def extract_medications(full_text: str) -> List[Medication]:
+    """
+    Uses a structured LLM call to extract medications from medical text.
+    """
     llm = ChatGoogleGenerativeAI(
-        model= "gemini-2.5-flash",
+        model="gemini-1.5-flash",
         temperature=0,
-        api_key=os.getenv("GEMINI_API_KEY") # Uses the OpenAI API key
+        api_key=os.getenv("GEMINI_API_KEY")
     )
     structured_llm = llm.with_structured_output(MedicationList)
 
@@ -33,7 +35,7 @@ def extract_medications(full_text):
 
     - Focus on sections titled "Medications At Discharge", "Discharge Medications", "Patient Instructions", and the "Plan" within the "Observation and Plan" section.
     
-    - It is critical that you find all medications. This includes general medication classes mentioned in the 'Plan' section (like 'beta-blockers' and 'ACE inhibitors') AND items mentioned in the 'Patient Instructions' (like 'steroid inhaler'). These are just as important as the named drugs. If medications are mispelled, spell thim correctly (change the mispelled"Cefodoxime" to the antibiotic "Cefpodoxime")
+    - It is critical that you find all medications. This includes general medication classes mentioned in the 'Plan' section (like 'beta-blockers' and 'ACE inhibitors') AND items mentioned in the 'Patient Instructions' (like 'steroid inhaler'). These are just as important as the named drugs. If medications are mispelled, spell thim correctly (change the mispelled "Cefodoxime" to the antibiotic "Cefpodoxime")
     
     - **For medications with multiple parts to their dosage or frequency (like a sublingual dose AND an IV drip), you MUST combine all parts into the final dosage string.**
     
