@@ -6,9 +6,9 @@ This project is a tool for pulling medication information from unstructured PDF 
 
 I solved the problem by breaking it into four main steps, with each step handled by its own Python module:
 
-1.  **PDF Parsing (`pdf_parser.py`):** The first part of the pipeline is text extraction. I knew that medical reports could be either normal PDFs with selectable text or scanned images. To handle both, I built a two-step process:
+1.  **PDF Parsing (`pdf_parser.py`):** The first part of the pipeline is text extraction. The medical reports are either normal PDFs with selectable text or scanned images. To handle both, I built a two-step process:
     * It first tries to pull text directly using the `pdfplumber` library.
-    * If a page is just an image, the script automatically uses a multimodal vision model to perform Optical Character Recognition (OCR) and read the text from the page. I initially tried Tesseract for OCR but found the vision model was much more accurate, especially with tables.
+    * If a page is just an image, the script automatically uses a multimodal vision model to perform Optical Character Recognition (OCR) and read the text from the page. I initially tried Tesseract for OCR but found the vision gemini-1.5 vision model was much more accurate, especially with tables.
 
 2.  **LLM-Powered Extraction (`llm_extraction.py`):** The extracted text is then sent to a Gemini-2.5-flash (after testing multiple models) to find the medications. I used `langchain` and Pydantic to force the model to give back a clean, structured JSON every time. This meant I didn't have to write messy code to parse the model's output and could rely on the data being in the right format for the next step.
 
