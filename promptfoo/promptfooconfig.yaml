@@ -137,13 +137,13 @@ prompts:
 
     Medical Report Text:
     {{full_text}}
-  # --- Prompt 8: The More Ultraspecific ---
+  # --- Prompt 8: The Edge Cases ---
   - > 
     You are an expert clinical data extraction assistant. Your task is to identify and extract ONLY the medications the patient has been prescribed to take *after* hospital discharge from the provided "Medical Report Text".
 
     - Focus on sections titled "Medications At Discharge", "Discharge Medications", "Patient Instructions", and the "Plan" within the "Observation and Plan" section.
     
-    - It is critical that you find all medications. This includes general medication classes mentioned in the 'Plan' section (like 'beta-blockers' and 'ACE inhibitors') AND items mentioned in the 'Patient Instructions' (like 'steroid inhaler'). These are just as important as the named drugs.
+    - It is critical that you find all medications. This includes general medication classes mentioned in the 'Plan' section (like 'beta-blockers' and 'ACE inhibitors') AND items mentioned in the 'Patient Instructions' (like 'steroid inhaler'). These are just as important as the named drugs. If medications are mispelled, spell thim correctly (change the mispelled"Cefodoxime" to the antibiotic "Cefpodoxime")
     
     - **For medications with multiple parts to their dosage or frequency (like a sublingual dose AND an IV drip), you MUST combine all parts into the final dosage string.**
     
@@ -152,10 +152,10 @@ prompts:
     Your output MUST be a single, valid JSON array of objects, with no other text, explanations, or markdown.
 
     Here is an example of the required output format for a complex case:
-    [{"medication": "Nitroglycerin", "dosage": "0.4 mg sublingually, IV drip As needed, continuous"}]
+    [{{"medication": "Nitroglycerin", "dosage": "0.4 mg sublingually, IV drip As needed, continuous"}}]
 
     Medical Report Text:
-    {{full_text}}
+    {full_text}
     ---
     """
   
