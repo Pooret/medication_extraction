@@ -10,9 +10,9 @@ I solved the problem by breaking it into four main steps, with each step handled
     * It first tries to pull text directly using the `pdfplumber` library.
     * If a page is just an image, the script automatically uses a multimodal vision model to perform Optical Character Recognition (OCR) and read the text from the page. I initially tried Tesseract for OCR but found the vision model was much more accurate, especially with tables.
 
-2.  **LLM-Powered Extraction (`llm_extraction.py`):** The extracted text is then sent to a Google Gemini model to find the medications. I used `langchain` and Pydantic to force the model to give back a clean, structured JSON every time. This meant I didn't have to write messy code to parse the model's output and could rely on the data being in the right format for the next step.
+2.  **LLM-Powered Extraction (`llm_extraction.py`):** The extracted text is then sent to a Gemini-2.5-flash (after testing multiple models) to find the medications. I used `langchain` and Pydantic to force the model to give back a clean, structured JSON every time. This meant I didn't have to write messy code to parse the model's output and could rely on the data being in the right format for the next step.
 
-3.  **External Verification (`verifier.py`):** Next, the script checks each extracted medication against the official NIH RxNorm API to see if it's real. The main challenge was that medication names can be messy (like "Metoprolol Succinate XL"). To solve this, I wrote a **progressive validation** function. It first checks "Metoprolol", then "Metoprolol Succinate", and so on, finding the longest possible name that the API recognizes. This is much more accurate than the original idea of just checking the first word.
+3.  **External Verification (`verifier.py`):** Next, the script checks each extracted medication against the official NIH RxNorm API to see if it's real. The main challenge was that medication names can be messy (like "Metoprolol Succinate XL"). To solve this, I wrote a **progressive validation** function. It first checks "Metoprolol", then "Metoprolol Succinate", then "Metoprolol Succinate XL", finding the longest possible valid medication name that the API recognizes. This is much more accurate than the original idea of just checking the first word.
 
 4.  **Output Generation (`output_generation.py`):** Finally, the script saves the results in the two required formats: a structured JSON file for computers and a clean Markdown file for people to read.
 
@@ -43,7 +43,7 @@ To make sure I was using the best possible prompt, I used **`promptfoo`** to tes
 ## 4. Challenges and Solutions
 
 * **Challenge:** Dealing with different kinds of PDFs (scanned images vs. regular text).
-    * **Solution:** The two-step text/OCR process in `pdf_parser.py`. This let the tool work on any kind of PDF automatically.
+    * **Solution:** The two-step text/OCR process in `pdf_parser.py`. This lets the tool work on any kind of PDF automatically.
 * **Challenge:** Validating messy or misspelled medication names.
     * **Solution:** I built a two-part solution. First, the LLM is prompted to fix misspellings during extraction. Second, the **progressive validation** function in `verifier.py` intelligently finds the most specific, correct name to check against the API, making the validation step much more accurate.
 * **Challenge:** Getting the LLM to reliably return data in the correct format.
