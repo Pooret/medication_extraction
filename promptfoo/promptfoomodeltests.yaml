@@ -1,0 +1,114 @@
+# yaml-language-server: $schema=https://promptfoo.dev/config-schema.json
+
+# Learn more about building a configuration: https://promptfoo.dev/docs/configuration/guide
+
+description: "Model testing"
+
+prompts:
+  - > 
+    You are an expert clinical data extraction assistant. Your task is to identify and extract ONLY the medications the patient has been prescribed to take *after* hospital discharge from the provided "Medical Report Text".
+
+    - Focus on sections titled "Medications At Discharge", "Discharge Medications", "Patient Instructions", and the "Plan" within the "Observation and Plan" section.
+    
+    - It is critical that you find all medications. This includes general medication classes mentioned in the 'Plan' section (like 'beta-blockers' and 'ACE inhibitors') AND items mentioned in the 'Patient Instructions' (like 'steroid inhaler'). These are just as important as the named drugs.
+    
+    - **For medications with multiple parts to their dosage or frequency (like a sublingual dose AND an IV drip), you MUST combine all parts into the final dosage string.**
+    
+    - Explicitly IGNORE medications mentioned only in "Hospital Course", "Medications Administered" during the stay, or those the patient is told to "Stop taking".
+
+    Your output MUST be a single, valid JSON array of objects, with no other text, explanations, or markdown.
+
+    Here is an example of the required output format for a complex case:
+    [{"medication": "Nitroglycerin", "dosage": "0.4 mg sublingually, IV drip As needed, continuous"}]
+
+    Medical Report Text:
+    {{full_text}}
+    ---
+  - > 
+    You are an expert clinical data extraction assistant. Your task is to identify and extract ONLY the medications the patient has been prescribed to take *after* hospital discharge from the provided "Medical Report Text".
+
+    - Focus on sections titled "Medications At Discharge", "Discharge Medications", "Patient Instructions", and the "Plan" within the "Observation and Plan" section.
+    
+    - It is critical that you find all medications. This includes general medication classes mentioned in the 'Plan' section (like 'beta-blockers' and 'ACE inhibitors') AND items mentioned in the 'Patient Instructions' (like 'steroid inhaler'). These are just as important as the named drugs.
+    
+    - **For medications with multiple parts to their dosage or frequency (like a sublingual dose AND an IV drip), you MUST combine all parts into the final dosage string.**
+    
+    - Explicitly IGNORE medications mentioned only in "Hospital Course", "Medications Administered" during the stay, or those the patient is told to "Stop taking".
+
+    Your output MUST be a single, valid JSON array of objects, with no other text, explanations, or markdown.
+
+    Here is an example of the required output format for a complex case:
+    [{"medication": "Nitroglycerin", "dosage": "0.4 mg sublingually, IV drip As needed, continuous"}]
+
+    Medical Report Text:
+    {{full_text}}
+    ---
+  - > 
+    You are an expert clinical data extraction assistant. Your task is to identify and extract ONLY the medications the patient has been prescribed to take *after* hospital discharge from the provided "Medical Report Text".
+
+    - Focus on sections titled "Medications At Discharge", "Discharge Medications", "Patient Instructions", and the "Plan" within the "Observation and Plan" section.
+    
+    - It is critical that you find all medications. This includes general medication classes mentioned in the 'Plan' section (like 'beta-blockers' and 'ACE inhibitors') AND items mentioned in the 'Patient Instructions' (like 'steroid inhaler'). These are just as important as the named drugs.
+    
+    - **For medications with multiple parts to their dosage or frequency (like a sublingual dose AND an IV drip), you MUST combine all parts into the final dosage string.**
+    
+    - Explicitly IGNORE medications mentioned only in "Hospital Course", "Medications Administered" during the stay, or those the patient is told to "Stop taking".
+
+    Your output MUST be a single, valid JSON array of objects, with no other text, explanations, or markdown.
+
+    Here is an example of the required output format for a complex case:
+    [{"medication": "Nitroglycerin", "dosage": "0.4 mg sublingually, IV drip As needed, continuous"}]
+
+    Medical Report Text:
+    {{full_text}}
+    ---
+  - > 
+    You are an expert clinical data extraction assistant. Your task is to identify and extract ONLY the medications the patient has been prescribed to take *after* hospital discharge from the provided "Medical Report Text".
+
+    - Focus on sections titled "Medications At Discharge", "Discharge Medications", "Patient Instructions", and the "Plan" within the "Observation and Plan" section.
+    
+    - It is critical that you find all medications. This includes general medication classes mentioned in the 'Plan' section (like 'beta-blockers' and 'ACE inhibitors') AND items mentioned in the 'Patient Instructions' (like 'steroid inhaler'). These are just as important as the named drugs.
+    
+    - **For medications with multiple parts to their dosage or frequency (like a sublingual dose AND an IV drip), you MUST combine all parts into the final dosage string.**
+    
+    - Explicitly IGNORE medications mentioned only in "Hospital Course", "Medications Administered" during the stay, or those the patient is told to "Stop taking".
+
+    Your output MUST be a single, valid JSON array of objects, with no other text, explanations, or markdown.
+
+    Here is an example of the required output format for a complex case:
+    [{"medication": "Nitroglycerin", "dosage": "0.4 mg sublingually, IV drip As needed, continuous"}]
+
+    Medical Report Text:
+    {{full_text}}
+    ---
+  
+
+providers:
+  - id: vertex:gemini-2.5-flash
+    config:
+      project: "gen-lang-client-0556887159"  
+      location: "us-central1"                
+      temperature: 0.0
+  - id: vertex:gemini-2.5-pro
+    config:
+      project: "gen-lang-client-0556887159"  
+      location: "us-central1"                
+      temperature: 0.0
+  - id: vertex:gemini-2.0-flash-001
+    config:
+      project: "gen-lang-client-0556887159"  
+      location: "us-central1"                
+      temperature: 0.0
+
+  - id: "openai:gpt-4o"
+    config:
+      temperature: 0.0
+  - id: "openai:gpt-4o-mini"
+    config:
+      temperature: 0.0
+  - id: anthropic:messages:claude-sonnet-4-20250514
+    config:
+      temperature: 0.0
+
+tests: file://test_cases.csv
+

@@ -1,0 +1,172 @@
+# yaml-language-server: $schema=https://promptfoo.dev/config-schema.json
+
+# Learn more about building a configuration: https://promptfoo.dev/docs/configuration/guide
+
+description: "My eval"
+
+prompts:
+  - >
+    You are an expert clinical data extraction assistant. Your task is to identify and extract ONLY the medications the patient has been prescribed to take *after* hospital discharge from the provided "Medical Report Text".
+    - Focus on sections titled "Medications At Discharge", "Discharge Medications", "Patient Instructions", and the "Plan" within the "Observation and Plan" section.
+    - Extract specific medication names AND general classes of medications (e.g., 'beta-blockers', 'steroid inhaler') if they are prescribed for discharge.
+    - Explicitly IGNORE medications mentioned only in "Hospital Course", "Medications Administered" during the stay, or those the patient is told to "Stop taking".
+    Your output MUST be a single, valid JSON array of objects, with no other text, explanations, or markdown.
+    Here is an example of the required output format: [{"medication": "Aspirin", "dosage": "81 mg Daily"}, {"medication": "Metoprolol", "dosage": "25 mg Twice daily"}]
+    Medical Report Text:
+    {{full_text}}
+
+  # --- Prompt 2: The Step-by-Step Thinker ---
+  - >
+    You are an expert clinical data extraction assistant. Follow these steps to extract discharge medications from the provided "Medical Report Text":
+    1. First, carefully read the entire report, paying special attention to the "Medications At Discharge", "Patient Instructions", and "Observation and Plan" sections.
+    2. Second, create a list of all medications and medication classes (like 'beta-blockers') the patient is instructed to take at home.
+    3. Third, IGNORE any medications that were only given in the hospital or that the patient was told to stop.
+    4. Finally, assemble this information into a single, valid JSON array of objects. Your output must only be the JSON array itself, with no other text or explanations.
+    Here is an example of the required output format: [{"medication": "Aspirin", "dosage": "81 mg Daily"}, {"medication": "Metoprolol", "dosage": "25 mg Twice daily"}]
+    Medical Report Text:
+    {{full_text}}
+
+  # --- Prompt 3: The Structured Role-Player (XML Tags) ---
+  - >
+    <role>You are a precise data processing engine. Your only function is to extract structured data from text according to the provided rules.</role>
+    
+    <task>From the "Medical Report Text" below, extract all medications the patient should take after discharge.</task>
+    
+    <rules>
+    - You must search in these specific sections: "Medications At Discharge", "Discharge Medications", "Patient Instructions", and the "Plan" section.
+    - You must extract specific drug names and also general drug classes like "beta-blockers".
+    - You must ignore inpatient-only medications.
+    - You must ignore medications the patient was told to "Stop taking".
+    </rules>
+    
+    <output_format>
+    Your output must be ONLY a single, valid JSON array of objects. Do not include any conversational text, apologies, or markdown formatting. The format is: [{"medication": "Medication Name", "dosage": "Dosage and Instructions"}]
+    </output_format>
+
+    <text>
+    {{full_text}}
+    </text>
+
+  # --- Prompt 4: The Ultra-Specific Prompt ---
+  - >
+    You are an expert clinical data extraction assistant. Your task is to identify and extract ONLY the medications the patient has been prescribed to take *after* hospital discharge from the provided "Medical Report Text".
+
+    - Focus on sections titled "Medications At Discharge", "Discharge Medications", "Patient Instructions", and the "Plan" within the "Observation and Plan" section.
+    
+    - It is critical that you find all medications. This includes general medication classes mentioned in the 'Plan' section (like 'beta-blockers' and 'ACE inhibitors') AND items mentioned in the 'Patient Instructions' (like 'steroid inhaler'). These are just as important as the named drugs.
+    
+    - Explicitly IGNORE medications mentioned only in "Hospital Course", "Medications Administered" during the stay, or those the patient is told to "Stop taking".
+
+    Your output MUST be a single, valid JSON array of objects, with no other text, explanations, or markdown.
+    For the dosages, they must be verbatim as shown in the text: (15 mg PO Daily instead of 15mg Daily)
+
+    Here is an example of the required output format: [{"medication": 'Aspirin', "dosage": "81 mg Daily"}, {"medication": "Metoprolol", "dosage": "25 mg Twice daily"}]
+
+    Medical Report Text:
+    {{full_text}}
+# --- Prompt 5: The Chain-of-Thought Reasoner ---
+  - >
+    You are an expert clinical data extraction assistant. Let's work through this step by step.
+
+    Task: Extract discharge medications from the medical report below.
+
+    First, let me identify the relevant sections where discharge medications are typically found:
+    - "Medications At Discharge" or "Discharge Medications" sections
+    - "Patient Instructions" sections  
+    - "Plan" sections within "Observation and Plan"
+
+    Next, I need to distinguish between:
+    ✓ INCLUDE: Medications prescribed for home use after discharge
+    ✓ INCLUDE: General medication classes (e.g., "beta-blockers", "ACE inhibitors", "steroid inhaler")
+    ✗ EXCLUDE: Hospital-only medications from "Hospital Course" or "Medications Administered"
+    ✗ EXCLUDE: Medications the patient is told to "Stop taking"
+
+    Finally, I'll format the results as a JSON array with medication names and dosages.
+
+    Output only the JSON array - no explanations, reasoning, or markdown formatting.
+
+    Expected format: [{"medication": "Drug Name", "dosage": "Dose and Frequency"}]
+
+    Medical Report Text:
+    {{full_text}}
+
+  # --- Prompt 6: The Contrast-Based Prompt (What NOT to Include) ---
+  - >
+    You are a clinical data extraction specialist. Extract ONLY discharge medications from the medical report.
+
+      WHAT TO EXTRACT (Discharge Medications):
+    - Medications listed in "Medications At Discharge" sections
+    - Medications mentioned in "Patient Instructions" for home use
+    - General medication classes prescribed in "Plan" sections (like "beta-blockers for heart failure")
+    - Any medication the patient should "Continue taking" at home
+
+      WHAT TO IGNORE (Hospital-Only or Discontinued):
+    - IV medications given during hospital stay
+    - Medications in "Hospital Course" that are not continued
+    - PRN medications used only during admission
+    - Medications explicitly listed as "Stop taking"
+    - Temporary medications (like "morphine for pain during stay")
+    - Diagnostic medications (like contrast agents)
+
+    Critical: Include both specific drug names AND general medication classes when prescribed for discharge.
+
+    Output Format: Return ONLY a valid JSON array. No text, explanations, or formatting.
+    [{"medication": "Medication Name", "dosage": "Dosage Information"}]
+
+    Medical Report Text:
+    {{full_text}}
+
+  # --- Prompt 7: The Few-Shot Example Prompt ---
+  - >
+    You are an expert clinical data extraction assistant. Extract discharge medications using the examples below as your guide.
+
+    Example 1 - Input: "Medications At Discharge: Lisinopril 10mg daily, Metformin 500mg twice daily"
+    Output: [{"medication": "Lisinopril", "dosage": "10mg daily"}, {"medication": "Metformin", "dosage": "500mg twice daily"}]
+
+    Example 2 - Input: "Patient Instructions: Continue taking aspirin 81mg daily. Stop taking hydrochlorothiazide. Plan: Prescribe beta-blockers for heart failure management."
+    Output: [{"medication": "Aspirin", "dosage": "81mg daily"}, {"medication": "beta-blockers", "dosage": "for heart failure management"}]
+
+    Example 3 - Input: "Hospital Course: Patient received IV morphine for pain. Medications At Discharge: Oxycodone 5mg every 6 hours as needed. Plan: Continue steroid inhaler for asthma."
+    Output: [{"medication": "Oxycodone", "dosage": "5mg every 6 hours as needed"}, {"medication": "steroid inhaler", "dosage": "for asthma"}]
+
+    Key Rules:
+    - Extract from "Medications At Discharge", "Patient Instructions", and "Plan" sections
+    - Include specific medications AND general classes (beta-blockers, steroid inhaler, etc.)
+    - Ignore hospital-only medications and those to be stopped
+    - Output ONLY the JSON array
+
+    Medical Report Text:
+    {{full_text}}
+  # --- Prompt 8: The More Ultraspecific ---
+  - > 
+    You are an expert clinical data extraction assistant. Your task is to identify and extract ONLY the medications the patient has been prescribed to take *after* hospital discharge from the provided "Medical Report Text".
+
+    - Focus on sections titled "Medications At Discharge", "Discharge Medications", "Patient Instructions", and the "Plan" within the "Observation and Plan" section.
+    
+    - It is critical that you find all medications. This includes general medication classes mentioned in the 'Plan' section (like 'beta-blockers' and 'ACE inhibitors') AND items mentioned in the 'Patient Instructions' (like 'steroid inhaler'). These are just as important as the named drugs.
+    
+    - **For medications with multiple parts to their dosage or frequency (like a sublingual dose AND an IV drip), you MUST combine all parts into the final dosage string.**
+    
+    - Explicitly IGNORE medications mentioned only in "Hospital Course", "Medications Administered" during the stay, or those the patient is told to "Stop taking".
+
+    Your output MUST be a single, valid JSON array of objects, with no other text, explanations, or markdown.
+
+    Here is an example of the required output format for a complex case:
+    [{"medication": "Nitroglycerin", "dosage": "0.4 mg sublingually, IV drip As needed, continuous"}]
+
+    Medical Report Text:
+    {{full_text}}
+    ---
+    """
+  
+
+providers:
+  - id: "openai:gpt-4o"
+    config:
+      temperature: 0.0
+  - id: "openai:gpt-4o-mini"
+    config:
+      temperature: 0.0
+
+tests: file://test_cases.csv
+
