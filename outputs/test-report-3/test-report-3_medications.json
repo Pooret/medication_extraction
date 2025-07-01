@@ -1,0 +1,65 @@
+[
+  {
+    "medication": "Daptomycin",
+    "dosage": "1000mg IV daily",
+    "validated": true,
+    "additional_information": {
+      "rxcui": "22299",
+      "matched_term": "Daptomycin"
+    }
+  },
+  {
+    "medication": "Cefepime",
+    "dosage": "2g IV q8h",
+    "validated": true,
+    "additional_information": {
+      "rxcui": "20481",
+      "matched_term": "Cefepime"
+    }
+  },
+  {
+    "medication": "Insulin Glargine",
+    "dosage": "20 units SC nightly",
+    "validated": true,
+    "additional_information": {
+      "rxcui": "274783",
+      "matched_term": "Insulin Glargine"
+    }
+  },
+  {
+    "medication": "Metoprolol Succinate XL",
+    "dosage": "50mg PO daily",
+    "validated": true,
+    "additional_information": {
+      "rxcui": "221124",
+      "matched_term": "Metoprolol Succinate"
+    }
+  },
+  {
+    "medication": "Lisinopril",
+    "dosage": "10mg PO daily",
+    "validated": true,
+    "additional_information": {
+      "rxcui": "29046",
+      "matched_term": "Lisinopril"
+    }
+  },
+  {
+    "medication": "Rosuvastatin",
+    "dosage": "20mg PO nightly",
+    "validated": true,
+    "additional_information": {
+      "rxcui": "301542",
+      "matched_term": "Rosuvastatin"
+    }
+  },
+  {
+    "medication": "Fluticasone/Salmeterol",
+    "dosage": "250/50mcg Inhaled BID",
+    "validated": true,
+    "additional_information": {
+      "rxcui": "284635",
+      "matched_term": "Fluticasone/Salmeterol"
+    }
+  }
+]

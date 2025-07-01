@@ -1,0 +1,107 @@
+[
+  {
+    "medication": "Aspirin",
+    "dosage": "81 mg Daily",
+    "validated": true,
+    "additional_information": {
+      "rxcui": "1191",
+      "matched_term": "Aspirin"
+    }
+  },
+  {
+    "medication": "Plavix (Clopidogrel)",
+    "dosage": "75 mg Daily",
+    "validated": true,
+    "additional_information": {
+      "rxcui": "174742",
+      "matched_term": "Plavix"
+    }
+  },
+  {
+    "medication": "Diltiazem",
+    "dosage": "60 mg Four times a day",
+    "validated": true,
+    "additional_information": {
+      "rxcui": "3443",
+      "matched_term": "Diltiazem"
+    }
+  },
+  {
+    "medication": "Lasix (Furosemide)",
+    "dosage": "40 mg Twice daily",
+    "validated": true,
+    "additional_information": {
+      "rxcui": "202991",
+      "matched_term": "Lasix"
+    }
+  },
+  {
+    "medication": "Lovenox (Enoxaparin)",
+    "dosage": "1 mg/kg Every 12 hours",
+    "validated": true,
+    "additional_information": {
+      "rxcui": "225036",
+      "matched_term": "Lovenox"
+    }
+  },
+  {
+    "medication": "Warfarin",
+    "dosage": "Adjusted based on INR Daily, for six months",
+    "validated": true,
+    "additional_information": {
+      "rxcui": "11289",
+      "matched_term": "Warfarin"
+    }
+  },
+  {
+    "medication": "Cefpodoxime",
+    "dosage": "200 mg Twice daily",
+    "validated": true,
+    "additional_information": {
+      "rxcui": "20489",
+      "matched_term": "Cefpodoxime"
+    }
+  },
+  {
+    "medication": "Nitroglycerin",
+    "dosage": "0.4 mg sublingually, IV drip As needed, continuous",
+    "validated": true,
+    "additional_information": {
+      "rxcui": "4917",
+      "matched_term": "Nitroglycerin"
+    }
+  },
+  {
+    "medication": "Atorvastatin",
+    "dosage": "40 mg Daily",
+    "validated": true,
+    "additional_information": {
+      "rxcui": "83367",
+      "matched_term": "Atorvastatin"
+    }
+  },
+  {
+    "medication": "Beta-blockers",
+    "dosage": "for heart failure management",
+    "validated": false,
+    "additional_information": {
+      "validation_error": "Medication not found in RxNorm."
+    }
+  },
+  {
+    "medication": "ACE inhibitors",
+    "dosage": "for heart failure management",
+    "validated": false,
+    "additional_information": {
+      "validation_error": "Medication not found in RxNorm."
+    }
+  },
+  {
+    "medication": "Steroid inhaler",
+    "dosage": "daily for asthma management",
+    "validated": false,
+    "additional_information": {
+      "validation_error": "Medication not found in RxNorm."
+    }
+  }
+]
