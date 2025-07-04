@@ -4,17 +4,19 @@ This project is a tool for pulling medication information from unstructured PDF 
 
 ## 1. My Approach to Solving the Problem
 
-I solved the problem by breaking it into four main steps, with each step handled by its own Python module:
+I solved the problem by breaking it into five main steps, with each step handled by its own Python module:
 
 1.  **PDF Parsing (`pdf_parser.py`):** The first part of the pipeline is text extraction. The medical reports are either normal PDFs with selectable text or scanned images. To handle both, I built a two-step process:
     * It first tries to pull text directly using the `pdfplumber` library.
     * If a page is just an image, the script automatically uses a multimodal vision model to perform Optical Character Recognition (OCR) and read the text from the page. I initially tried Tesseract for OCR but found the vision gemini-1.5 vision model was much more accurate, especially with tables.
 
-2.  **LLM-Powered Extraction (`llm_extraction.py`):** The extracted text is then sent to a Gemini-2.5-flash (after testing multiple models) to find the medications. I used `langchain` and Pydantic to force the model to give back a clean, structured JSON every time. This meant I didn't have to write messy code to parse the model's output and could rely on the data being in the right format for the next step.
+2.  **Preprocessing (`preprocessing.py`):** Once the raw text is extracted, it is cleaned to remove irregular whitespace, hyphenated line breaks, and redundant spaces.
 
-3.  **External Verification (`verifier.py`):** Next, the script checks each extracted medication against the official NIH RxNorm API to see if it's real. The main challenge was that medication names can be messy (like "Metoprolol Succinate XL"). To solve this, I wrote a **progressive validation** function. It first checks "Metoprolol", then "Metoprolol Succinate", then "Metoprolol Succinate XL", finding the longest possible valid medication name that the API recognizes. This is much more accurate than the original idea of just checking the first word.
+3.  **LLM-Powered Extraction (`llm_extraction.py`):** The cleaned text is sent to a Gemini-2.5-flash (after testing multiple models) to find the medications. I used `langchain` and Pydantic to force the model to give back a clean, structured JSON every time. This meant I didn't have to write messy code to parse the model's output and could rely on the data being in the right format for the next step.
 
-4.  **Output Generation (`output_generation.py`):** Finally, the script saves the results in the two required formats: a structured JSON file and a Markdown file.
+4.  **External Verification (`verifier.py`):** Next, the script checks each extracted medication against the official NIH RxNorm API to see if it's real. The main challenge was that medication names can be messy (like "Metoprolol Succinate XL"). To solve this, I wrote a **progressive validation** function. It first checks "Metoprolol", then "Metoprolol Succinate", then "Metoprolol Succinate XL", finding the longest possible valid medication name that the API recognizes. This is much more accurate than the original idea of just checking the first word.
+
+5.  **Output Generation (`output_generation.py`):** Finally, the script saves the results in the two required formats: a structured JSON file and a Markdown file.
 
 ## 2. Core Assumptions & Scope
 
