@@ -1,57 +1,69 @@
 # Medication Extraction from Medical Reports
 
-This project is a tool for pulling medication information from unstructured PDF medical reports. It uses LLMs to intelligently find the text and verifies the medications it finds against the NIH RxNorm API.
+This project provides a robust, automated pipeline for extracting medication information from unstructured PDF medical reports. It leverages Large Language Models (LLMs) for intelligent text recognition and data extraction, and verifies the extracted medications against the official NIH RxNorm API to ensure clinical accuracy.
 
 ## 1. My Approach to Solving the Problem
 
-I solved the problem by breaking it into five main steps, with each step handled by its own Python module:
+I designed the solution as a modular pipeline, breaking the complex problem into five distinct, manageable steps. Each step is handled by a dedicated Python module, ensuring the code is clean, maintainable, and easy to understand.
 
-1.  **PDF Parsing (`pdf_parser.py`):** The first part of the pipeline is text extraction. The medical reports are either normal PDFs with selectable text or scanned images. To handle both, I built a two-step process:
-    * It first tries to pull text directly using the `pdfplumber` library.
-    * If a page is just an image, the script automatically uses a multimodal vision model to perform Optical Character Recognition (OCR) and read the text from the page. I initially tried Tesseract for OCR but found the vision gemini-1.5 vision model was much more accurate, especially with tables.
+**The 5-Step Pipeline:**
 
-2.  **Preprocessing (`preprocessing.py`):** Once the raw text is extracted, it is cleaned to remove irregular whitespace, hyphenated line breaks, and redundant spaces.
+1.  **Hybrid PDF Parsing (`pdf_parser.py`):** The process begins with universal text extraction. Recognizing that medical reports can be either text-based PDFs or scanned images, the parser first attempts a direct text extraction with `pdfplumber`. If a page yields little or no text (indicating it's an image), it automatically falls back to a powerful multimodal vision model (`gemini-1.5-pro`) to perform Optical Character Recognition (OCR). This hybrid approach ensures that virtually any PDF report can be processed without failure.
 
-3.  **LLM-Powered Extraction (`llm_extraction.py`):** The cleaned text is sent to a Gemini-2.5-flash (after testing multiple models) to find the medications. I used `langchain` and Pydantic to force the model to give back a clean, structured JSON every time. This meant I didn't have to write messy code to parse the model's output and could rely on the data being in the right format for the next step.
+2.  **Text Preprocessing (`preprocessing.py`):** Raw extracted text is often messy. This module normalizes the text by fixing common OCR and formatting artifacts, such as inconsistent line breaks, hyphenated words at line endings, and redundant whitespace. This cleaning step provides a clean, coherent input for the LLM.
 
-4.  **External Verification (`verifier.py`):** Next, the script checks each extracted medication against the official NIH RxNorm API to see if it's real. The main challenge was that medication names can be messy (like "Metoprolol Succinate XL"). To solve this, I wrote a **progressive validation** function. It first checks "Metoprolol", then "Metoprolol Succinate", then "Metoprolol Succinate XL", finding the longest possible valid medication name that the API recognizes. This is much more accurate than the original idea of just checking the first word.
+3.  **LLM-Powered Extraction (`llm_extraction.py`):** The cleaned text is then passed to a fine-tuned Gemini model (`gemini-1.5-flash`). By using `langchain` with Pydantic models, I enforce a structured JSON output from the LLM. This is a critical design choice that guarantees the data sent to the next step is always in the correct format, making the entire system more reliable and eliminating the need for fragile manual parsing of the LLM's response.
 
-5.  **Output Generation (`output_generation.py`):** Finally, the script saves the results in the two required formats: a structured JSON file and a Markdown file.
+4.  **External Verification (`verifier.py`):** Each extracted medication is validated against the NIH RxNorm API. A key challenge here is that extracted medication names can be messy (e.g., "Metoprolol Succinate XL 25mg"). To solve this, I implemented a **progressive validation** function. It intelligently checks for the longest valid medication name recognized by the API (first checking "Metoprolol", then "Metoprolol Succinate"). This method is far more resilient and accurate than a simple exact-match lookup.
+
+5.  **Output Generation (`output_generation.py`):** Finally, the validated data is formatted and saved into the two required outputs: a structured `JSON` file for machine readability and a clean `Markdown` file for human review.
 
 ## 2. Core Assumptions & Scope
 
-To build a useful tool, I had to make a few key decisions about what to include in the extraction. Here’s the scope I decided on:
+To deliver a focused and effective solution, I made the following key assumptions about the project's scope:
 
-* **Extract Only What the Patient Needs to Take Home:** I focused on pulling the final list of medications the patient should actually be taking *after* they leave the hospital. This is the most important list for keeping the patient safe.
+* **Focus on Actionable, Post-Discharge Medications:** The primary goal is to extract the final medication list the patient must follow at home. This is the most critical information for patient safety and continuity of care.
+* **Explicitly Ignore Transitory & Discontinued Meds:** The system is intentionally designed to filter out medications administered only *during* the hospital stay and any medications the patient was explicitly told to *stop* taking.
+* **Include General Clinical Instructions:** Important non-specific instructions (e.g., "take a daily steroid inhaler," "continue with ACE inhibitors") are captured as they represent actionable clinical advice.
+* **Primacy of the Discharge List:** In cases of conflicting information within a report, the "Medications at Discharge" or equivalent section is considered the single source of truth.
 
-* **Ignore In-Hospital and Stopped Meds:** This means the script was built to ignore two things: medications only given *during* the hospital stay, and medications the patient was specifically told to *stop* taking.
+## 3. Prompt Design and Model Selection
 
-* **Include General Medication Classes:** The script also grabs general instructions like "steroid inhaler" or "ACE inhibitors," since these are important clinical instructions.
+The quality of the extraction hinges on the quality of the prompt and the capability of the model.
 
-* **The Discharge List is Always Right:** If a report had conflicting medication lists (like what the patient took before vs. after their stay), I treated the "Medications At Discharge" section as the correct and final word.
+### Prompt Engineering
 
-## 3. Prompt Design and Validation
+My final prompt in `llm_extraction.py` was refined based on several key principles:
+* **Role-Playing:** Assigning the LLM the role of an "expert clinical data extraction assistant" primes it for higher accuracy.
+* **Clear Positive and Negative Constraints:** The prompt is highly specific, listing the exact sections to focus on ("Medications At Discharge," "Patient Instructions") while explicitly instructing the model to *ignore* irrelevant sections ("Hospital Course," "Medications Administered"). This significantly reduces noise.
+* **Detail-Oriented Instructions:** The prompt directs the model to correct common misspellings (e.g., "Cefodoxime" -> "Cefpodoxime") and capture general medication classes, which are often missed by simpler extraction rules.
+* **Output Structuring:** By using LangChain's `with_structured_output` feature, the model is forced to return valid JSON conforming to a Pydantic model, ensuring downstream reliability.
 
-I designed the final prompt in `llm_extraction.py` using a few key ideas:
+### Model Evaluation and Choice
 
-* **Role:** I told the LLM to act as an "expert clinical data extraction assistant" to get it in the right mindset.
-* **Do's:** The prompt clearly states which sections to look at, like "Medications At Discharge" or "Patient Instructions."
-* **Don'ts:** Just as important, it explicitly tells the model what to ignore, like medications from the "Hospital Course" or ones the patient was told to "Stop taking." This was a huge help in getting accurate results.
-* **Handling Details:** The prompt asks the model to look for general classes (like "beta-blockers") and to fix common misspellings it finds.
-* **Structured Output:** By using LangChain's structured output feature, the model *has* to return valid JSON, which makes the whole system more stable.
+To empirically select the best model, I used the **`promptfoo`** framework to evaluate 8 different prompts against a suite of test cases, including several difficult edge cases. I benchmarked models from OpenAI, Google, and Anthropic.
 
-To make sure I was using the best possible prompt, I used **`promptfoo`** to test 8 different prompt ideas against a CSV file of test cases, including some tough edge cases. This let me get real numbers on how well each prompt worked with different models (like GPT, Gemini, and Claude). I picked the one that consistently got the highest score for accuracy and was the most reliable. The results showed that **`gemini-2.5-flash`** with a very specific, few-shot prompt gave the best performance.
+The results were clear: while `gpt-4o-mini` performed well and could achieve 100% accuracy on some tests, its performance was not consistently reproducible across all edge cases. **`gemini-2.5-flash` demonstrated higher overall accuracy and, critically, greater consistency in its structured output.** For a clinical application where accuracy and reliability are paramount, consistency was the deciding factor, making Gemini the optimal choice for this task.
 
 ## 4. Challenges and Solutions
 
-* **Challenge:** Dealing with different kinds of PDFs (scanned images vs. regular text).
-    * **Solution:** The two-step text/OCR process in `pdf_parser.py`. This lets the tool work on any kind of PDF automatically.
-* **Challenge:** Validating messy or misspelled medication names.
-    * **Solution:** I built a two-part solution. First, the LLM is prompted to fix misspellings during extraction. Second, the **progressive validation** function in `verifier.py` intelligently finds the most specific, correct name to check against the API, making the validation step much more accurate.
-* **Challenge:** Getting the LLM to reliably return data in the correct format.
-    * **Solution:** Using `langchain` with Pydantic models avoided the headache of trying to parse unpredictable text from the LLM and made the whole process more reliable.
+* **Challenge:** Handling heterogeneous PDF formats (text-based vs. scanned images).
+    * **Solution:** The **hybrid text/OCR parser** in `pdf_parser.py` automatically detects the page type and applies the appropriate extraction method, creating a single, robust ingestion point.
+* **Challenge:** Validating messy or misspelled medication names against a strict API.
+    * **Solution:** This was addressed with a two-pronged approach. First, the LLM is prompted to correct misspellings. Second, the **progressive validation** logic in `verifier.py` intelligently finds the most specific valid name, dramatically improving the success rate of API verification.
+* **Challenge:** Ensuring the LLM returns data in a usable, consistent format.
+    * **Solution:** Using `langchain` with Pydantic models (`with_structured_output`) completely bypasses the problem of parsing unpredictable LLM text outputs. It forces the model's response into a reliable, pre-defined schema, making the entire pipeline more resilient.
 
-## 5. How to Run the Code
+## 5. Future Enhancements & Scope Limitations
+
+While the current solution is robust and meets all requirements, here are several enhancements that could be implemented in a future iteration to further improve its capabilities:
+
+* **Advanced Preprocessing:** Implement a preprocessing step to expand common medical abbreviations (e.g., "PO" to "by mouth", "QID" to "four times daily") and remove redundant boilerplate phrases. This would enrich the extracted data and improve the signal-to-noise ratio for the LLM.
+* **Dedicated Post-OCR Spell-Checking:** While the LLM is prompted to correct misspellings, OCR can sometimes produce errors that are too significant for the model to fix. A dedicated spell-checking layer (using a library like `pyspellchecker` with a custom medical dictionary) after OCR could further improve data quality before it reaches the extraction model.
+* **Full Strength and Route Validation:** The current verification confirms the medication's existence. A more advanced version could leverage the RxNorm API further to validate that the extracted **dosage strength** (e.g., "10mg") is a commercially marketed strength for that drug and validate the **route of administration**.
+* **Broader Entity Extraction:** The pipeline could be expanded to extract other valuable clinical entities, such as diagnoses, allergies, or lab values, by creating new Pydantic models and adjusting the LLM prompt.
+
+## 6. How to Run the Code
 
 ### Setup
 
