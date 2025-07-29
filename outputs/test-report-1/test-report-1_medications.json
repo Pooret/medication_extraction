@@ -9,12 +9,12 @@
     }
   },
   {
-    "medication": "Plavix (Clopidogrel)",
+    "medication": "Clopidogrel",
     "dosage": "75 mg Daily",
     "validated": true,
     "additional_information": {
-      "rxcui": "174742",
-      "matched_term": "Plavix"
+      "rxcui": "32968",
+      "matched_term": "Clopidogrel"
     }
   },
   {
@@ -27,26 +27,17 @@
     }
   },
   {
-    "medication": "Lasix (Furosemide)",
+    "medication": "Furosemide",
     "dosage": "40 mg Twice daily",
     "validated": true,
     "additional_information": {
-      "rxcui": "202991",
-      "matched_term": "Lasix"
-    }
-  },
-  {
-    "medication": "Lovenox (Enoxaparin)",
-    "dosage": "1 mg/kg Every 12 hours",
-    "validated": true,
-    "additional_information": {
-      "rxcui": "225036",
-      "matched_term": "Lovenox"
+      "rxcui": "4603",
+      "matched_term": "Furosemide"
     }
   },
   {
     "medication": "Warfarin",
-    "dosage": "Adjusted based on INR Daily, for six months",
+    "dosage": "Adjusted based on INR Daily",
     "validated": true,
     "additional_information": {
       "rxcui": "11289",
@@ -64,7 +55,7 @@
   },
   {
     "medication": "Nitroglycerin",
-    "dosage": "0.4 mg sublingually, IV drip As needed, continuous",
+    "dosage": "0.4 mg sublingually, IV drip continuous",
     "validated": true,
     "additional_information": {
       "rxcui": "4917",
@@ -81,8 +72,8 @@
     }
   },
   {
-    "medication": "Beta-blockers",
-    "dosage": "for heart failure management",
+    "medication": "beta-blockers",
+    "dosage": "Daily",
     "validated": false,
     "additional_information": {
       "validation_error": "Medication not found in RxNorm."
@@ -90,15 +81,15 @@
   },
   {
     "medication": "ACE inhibitors",
-    "dosage": "for heart failure management",
+    "dosage": "Daily",
     "validated": false,
     "additional_information": {
       "validation_error": "Medication not found in RxNorm."
     }
   },
   {
-    "medication": "Steroid inhaler",
-    "dosage": "daily for asthma management",
+    "medication": "steroid inhaler",
+    "dosage": "Daily",
     "validated": false,
     "additional_information": {
       "validation_error": "Medication not found in RxNorm."

@@ -1,7 +1,7 @@
 # llm_extraction.py
 
 import os
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from langchain_google_genai import ChatGoogleGenerativeAI
 from pydantic import BaseModel, Field
 from dotenv import load_dotenv
@@ -13,7 +13,7 @@ class Medication(BaseModel):
     medication: str = Field(description="The name of the drug, corrected for any misspellings.")
     dosage: str = Field(description="A single string that includes all dosage and administration instructions.")
     validated: bool = Field(default=False, description="Flag indicating if the medication was validated.")
-    additional_information: Dict[str, Any] = Field(default_factory=dict, description="Supplementary data like RxCUI or errors.")
+    additional_information: Optional[Dict[str, Any]] = Field(default_factory=dict, description="Supplementary data like RxCUI or errors.")
 
 class MedicationList(BaseModel):
     """Pydantic model for a list of medications."""

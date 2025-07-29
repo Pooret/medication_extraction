@@ -1,0 +1,56 @@
+[
+  {
+    "medication": "Amlodipine",
+    "dosage": "15mg PO Daily",
+    "validated": true,
+    "additional_information": {
+      "rxcui": "17767",
+      "matched_term": "Amlodipine"
+    }
+  },
+  {
+    "medication": "Metoprolol Tartrate",
+    "dosage": "25mg PO Twice daily",
+    "validated": true,
+    "additional_information": {
+      "rxcui": "203191",
+      "matched_term": "Metoprolol Tartrate"
+    }
+  },
+  {
+    "medication": "Aspirin",
+    "dosage": "81mg PO Daily",
+    "validated": true,
+    "additional_information": {
+      "rxcui": "1191",
+      "matched_term": "Aspirin"
+    }
+  },
+  {
+    "medication": "Oxycodone",
+    "dosage": "5-10mg PO Every 4-6 hours as needed for pain",
+    "validated": true,
+    "additional_information": {
+      "rxcui": "7804",
+      "matched_term": "Oxycodone"
+    }
+  },
+  {
+    "medication": "Cyclobenzaprine",
+    "dosage": "10mg PO Three times daily as needed for muscle spasms",
+    "validated": true,
+    "additional_information": {
+      "rxcui": "21949",
+      "matched_term": "Cyclobenzaprine"
+    }
+  },
+  {
+    "medication": "Levothyroxine",
+    "dosage": "125mcg PO Daily",
+    "validated": true,
+    "additional_information": {
+      "rxcui": "10582",
+      "matched_term": "Levothyroxine"
+    }
+  }
+]
