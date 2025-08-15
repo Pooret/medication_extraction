@@ -1,11 +1,12 @@
 # main.py
-from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi import FastAPI, File, UploadFile, HTTPException, Depends
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime, timezone
 import uuid
 import tempfile
 import shutil
+from sqlmodel import Session
 
 import os
 import argparse
@@ -14,6 +15,8 @@ from llm_extraction import extract_medications
 from verifier import validate_medication_api
 from preprocessing import preprocess_text
 from output_generation import generate_json_output, generate_markdown_output
+from database import get_db, engine
+from models import ExtractionJob, create_db_and_tables
 
 app = FastAPI(
     title="Medication Extraction API",
@@ -29,9 +32,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-# Store results temporarily (in production, you'd use a database)
-results_store = {}
 
+@app.on_event("startup")
+def on_startup():
+     create_db_and_tables()
 
 @app.get("/")
 async def root():
@@ -49,83 +53,58 @@ async def root():
 async def health_check():
     return {"status": "healthy", "timestamp": datetime.now(timezone.utc)}
 
-@app.post("/extract")
-async def extract_medications_from_pdf(file: UploadFile = File(...)):
+@app.post("/extract", response_model=ExtractionJob)
+async def extract_medications_from_pdf(file: UploadFile = File(...), db: Session = Depends(get_db)):
 
     if not file.filename.lower().endswith('.pdf'):
         raise HTTPException(status_code=400, detail="Only PDF files are supported")
     
     job_id = str(uuid.uuid4())
+    temp_filepath = None
 
     try:
         with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as temp_file:
             shutil.copyfileobj(file.file, temp_file)
             temp_filepath = temp_file.name
 
-        # Step 1: Extract text from PDF
+ # --- Processing Pipeline ---
         extracted_text = extract_text_from_pdf(temp_filepath)
         if not extracted_text:
-            print("Could not extract text from the document. Skipping.")
-            return
+            raise HTTPException(status_code=404, detail="Could not extract any text from the document.")
 
-        # 2. Clean and preprocess text
         cleaned_text = preprocess_text(extracted_text)
-
-        # 3. Extract medications using the LLM
         extracted_meds = extract_medications(cleaned_text)
-        if not extracted_meds:
-            results_store[job_id] = {
-                "status": "completed",
-                "filename": file.filename,
-                "processed_at": datetime.now(timezone.utc).isoformat(),
-                "medications": [],
-                "message": "No medications found"
-            }
-        else:
-            # 4. Verify each medication against the RxNorm API
-            final_med_data = []
-            for med in extracted_meds:
-                final_med_data.append(validate_medication_api(med))
 
-            results_store[job_id] = {
-                "status": "completed",
-                "filename": file.filename,
-                "processed_at": datetime.now(timezone.utc).isoformat(),
-                "medications": final_med_data,
-                "total_medications": len(final_med_data),
-                "validated_count": sum(1 for med in final_med_data if med.get('validated', False))
-            }
+        final_med_data = []
 
-        os.unlink(temp_filepath)
+        if extracted_meds:
+            final_med_data = [validate_medication_api(med) for med in extracted_meds]
 
-        return {
-            "job_id": job_id,
-            "status": "completed",
-            "message": "PDF processed successfully",
-            "filename": file.filename
-        }
-    except Exception as e:
-        if 'temp_filepath' in locals():
-            try:
-                os.unlink(temp_filepath)
-            except:
-                pass
-            
-        results_store[job_id] = {
-            "status": "error",
-            "filename": file.filename,
-            "processed_at": datetime.now(timezone.utc).isoformat(),
-            "error": str(e)
-        }
-        
-        raise HTTPException(status_code=500, detail=f"Error processing PDF: {str(e)}")
+        new_job = ExtractionJob(
+             id = job_id, 
+             filename=file.filename,
+             medications=final_med_data,
+             total_medications=len(final_med_data),
+             validated_count = sum(1 for med in final_med_data if med.get('validated', False))
+        )
+
+        db.add(new_job)
+        db.commit()
+        db.refresh(new_job)
+        return new_job
     
-@app.get("/results/{job_id}")
-async def get_results(job_id:str):
-        if job_id not in results_store:
-            raise HTTPException(status_code=404, detail=f"Job ID {job_id} not found")
-        
-        return results_store[job_id]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error processing PDF: {str(e)}")
+    finally:
+        if temp_file and os.path.exists(temp_filepath):
+            os.unlink(temp_filepath)
+    
+@app.get("/results/{job_id}", response_model=ExtractionJob)
+async def get_results(job_id: str, db: Session = Depends(get_db)):
+    job_result = db.get(ExtractionJob, job_id)
+    if not job_result:
+        raise HTTPException(status_code=404, detail=f"Job ID {job_id} not found")
+    return job_result
 
 @app.get("/results/{job_id}/json")
 async def download_json(job_id:str):
