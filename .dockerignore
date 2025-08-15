@@ -1,0 +1,16 @@
+# .dockerignore
+
+__pycache__/
+*.pyc
+*.pyo
+*.md
+*.json
+.env
+.venv/
+venv/
+outputs/
+promptfoo/
+test_files/
+.git
+.gitignore
+README.md
