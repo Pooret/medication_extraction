@@ -1,3 +1,7 @@
+
+# Secrets
+medication-extraction-key-pai.pem
+
 # --- Python Stuffs ---
 # Compiled python files
 __pycache__/
